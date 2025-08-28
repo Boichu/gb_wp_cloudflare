@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: gb_wp_cloudflare
+ * Plugin Name: GB - WP - Cloudflare
  * Description: Purge automatique Cloudflare via l’API officielle (api.cloudflare.com). Ajoute aussi un bouton manuel dans l’admin pour vider le cache.
  * Version: 1.0.1
  * Author: Gaétan Boishue
