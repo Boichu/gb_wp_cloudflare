@@ -2,7 +2,7 @@
 /**
  * Plugin Name: gb_wp_cloudflare
  * Description: Purge automatique Cloudflare via l’API officielle (api.cloudflare.com). Ajoute aussi un bouton manuel dans l’admin pour vider le cache.
- * Version: 1.0
+ * Version: 1.0.1
  * Author: Gaétan Boishue
  */
 
@@ -215,3 +215,91 @@ function gb_cf_purge_admin_page() {
     submit_button('Purger tout le cache Cloudflare', 'primary', 'gb_cf_purge_btn');
     echo '</form></div>';
 }
+
+/**
+ * Vérifie les mises à jour du plugin via GitHub
+ */
+add_filter('pre_set_site_transient_update_plugins', function($transient) {
+    if (empty($transient->checked)) {
+        return $transient;
+    }
+
+    $plugin_slug = 'gb_wp_cloudflare';
+    $plugin_file = 'gb_wp_cloudflare/gb_wp_cloudflare.php';
+    $github_api_url = 'https://api.github.com/repos/gaetanboishue/gb_wp_cloudflare/releases/latest';
+
+    $response = wp_remote_get($github_api_url, [
+        'headers' => [
+            'Accept' => 'application/vnd.github.v3+json',
+            'User-Agent' => 'WordPress/' . get_bloginfo('version'),
+        ],
+        'timeout' => 15,
+    ]);
+
+    if (is_wp_error($response)) {
+        return $transient;
+    }
+
+    $body = json_decode(wp_remote_retrieve_body($response), true);
+    if (empty($body['tag_name'])) {
+        return $transient;
+    }
+
+    $latest_version = ltrim($body['tag_name'], 'v');
+    $current_version = get_plugin_data(__FILE__)['Version'];
+
+    if (version_compare($latest_version, $current_version, '>')) {
+        $download_url = $body['zipball_url'];
+        $transient->response[$plugin_file] = (object)[
+            'slug'        => $plugin_slug,
+            'plugin'      => $plugin_file,
+            'new_version' => $latest_version,
+            'url'         => $body['html_url'],
+            'package'     => $download_url,
+        ];
+    }
+
+    return $transient;
+});
+
+/**
+ * Affiche les infos de la mise à jour dans la popup
+ */
+add_filter('plugins_api', function($res, $action, $args) {
+    if ($action !== 'plugin_information' || empty($args->slug) || $args->slug !== 'gb_wp_cloudflare') {
+        return $res;
+    }
+
+    $github_api_url = 'https://api.github.com/repos/gaetanboishue/gb_wp_cloudflare/releases/latest';
+    $response = wp_remote_get($github_api_url, [
+        'headers' => [
+            'Accept' => 'application/vnd.github.v3+json',
+            'User-Agent' => 'WordPress/' . get_bloginfo('version'),
+        ],
+        'timeout' => 15,
+    ]);
+
+    if (is_wp_error($response)) {
+        return $res;
+    }
+
+    $body = json_decode(wp_remote_retrieve_body($response), true);
+    if (empty($body['tag_name'])) {
+        return $res;
+    }
+
+    $info = (object)[
+        'name'          => 'gb_wp_cloudflare',
+        'slug'          => 'gb_wp_cloudflare',
+        'version'       => ltrim($body['tag_name'], 'v'),
+        'author'        => '<a href="https://github.com/gaetanboishue">Gaétan Boishue</a>',
+        'homepage'      => $body['html_url'],
+        'download_link' => $body['zipball_url'],
+        'sections'      => [
+            'description' => !empty($body['body']) ? nl2br($body['body']) : '',
+            'changelog'   => !empty($body['body']) ? nl2br($body['body']) : '',
+        ],
+    ];
+
+    return $info;
+}, 10, 3);
