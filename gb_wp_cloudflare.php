@@ -42,17 +42,39 @@ function gb_cf_settings_page() {
     $zone_id = esc_attr(get_option('gb_cf_zone_id', ''));
     $api_token = esc_attr(get_option('gb_cf_api_token', ''));
 
-    echo '<div class="wrap">';
-    echo '<h1>Configuration Cloudflare</h1>';
-    echo '<form method="post">';
-    echo '<table class="form-table">';
-    echo '<tr><th scope="row"><label for="gb_cf_zone_id">Zone ID</label></th>';
-    echo '<td><input type="text" id="gb_cf_zone_id" name="gb_cf_zone_id" value="' . $zone_id . '" class="regular-text" /></td></tr>';
-    echo '<tr><th scope="row"><label for="gb_cf_api_token">API Token</label></th>';
-    echo '<td><input type="text" id="gb_cf_api_token" name="gb_cf_api_token" value="' . $api_token . '" class="regular-text" /></td></tr>';
-    echo '</table>';
-    submit_button('Enregistrer', 'primary', 'gb_cf_save_settings');
-    echo '</form></div>';
+    ?>
+    <div class="wrap">
+        <h1>Configuration Cloudflare</h1>
+        <p>
+            <strong>Comment obtenir vos codes Cloudflare ?</strong><br>
+            <ul>
+            <li>
+                <b>Zone ID :</b> 
+                <a href="https://dash.cloudflare.com/?zone=overview" target="_blank">Connectez-vous à votre tableau de bord Cloudflare</a>, sélectionnez votre site, puis copiez le <b>Zone ID</b> affiché dans la section “Overview”.
+            </li>
+            <li>
+                <b>API Token :</b> 
+                <a href="https://dash.cloudflare.com/profile/api-tokens" target="_blank">Générez un API Token ici</a>.<br>
+                Cliquez sur “Create Token”, choisissez le modèle “Edit Cloudflare Zone”, puis autorisez-le sur la zone de votre site.<br>
+                Copiez le token généré et collez-le ici.
+            </li>
+            </ul>
+        </p>
+        <form method="post">
+            <table class="form-table">
+                <tr>
+                    <th scope="row"><label for="gb_cf_zone_id">Zone ID</label></th>
+                    <td><input type="text" id="gb_cf_zone_id" name="gb_cf_zone_id" value="<?= $zone_id ?>" class="regular-text" /></td>
+                </tr>
+                <tr>
+                    <th scope="row"><label for="gb_cf_api_token">API Token</label></th>
+                    <td><input type="text" id="gb_cf_api_token" name="gb_cf_api_token" value="<?= $api_token ?>" class="regular-text" /></td>
+                </tr>
+            </table>
+            <?php submit_button('Enregistrer', 'primary', 'gb_cf_save_settings'); ?>
+        </form>
+    </div>
+    <?php
 }
 
 /**
